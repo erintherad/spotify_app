@@ -21,15 +21,16 @@
           <hr>
           <form id="spotify-search">
             <div class="form-group">
-              <input class="form-control" id="newTrack" placeholder="Song Title" autofocus>
+              <input class="form-control" id="track" placeholder="Song Title" autofocus>
             </div>
             <div class="form-group">
               <input type="submit" class="btn btn-success" value="Search">
             </div>
           </form>
           <hr>
+          <img src="loading.gif" width="80" id="loading">
         </div>
-        <div id="resultList"></div>
+        <div id="results"></div>
       </div>
     </div>
   </div>
@@ -47,18 +48,21 @@
   <script type="text/javascript" src="script.js"></script>
 
   <!-- underscore template -->
-  <script type="text/template" id="song-template">
-    <div class="songpost">
-      <p>
-      <button type="button" class="close delete" aria-label="Close"><span aria-hidden="true">&times;</span></button>
-        <span class="todo-text">Song: <%= song %></span>
-      </p>
-      <p>
-        <span class="todo-text">Arist: <%= artist %></span>
-      </p> 
-      <p>
-        <span class="todo-text">Album: <%= album %></span>
-      </p> 
+  <script type="text/template" id="track-template">
+    <div class="track">
+      <div class="row">
+        <div class="col-xs-4">
+          <img src="<%= albumArt %>" class="img-responsive">
+        </div>
+        <div class="col-xs-8">
+          <p>
+            <strong><%= name %></strong> by <%= artist %>
+          </p>
+          <p>
+            <a href="<%= previewUrl %>" target="_blank" class="btn btn-sm btn-default">Preview <span class="glyphicon glyphicon-play"></span></a>
+          </p>
+        </div>
+      </div>
       <hr>
     </div>
   </script>

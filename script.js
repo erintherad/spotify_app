@@ -1,62 +1,75 @@
 $(function() {
 
-	var $spotifySearch = $('#spotify-search');
+  // form to search spotify API
+  var $spotifySearch = $('#spotify-search');
 
-	var $newtrack = $('#newTrack');
+  // form input for track (song)
+  var $track = $('#track');
 
-	var $resultList = $('#resultList');
+  // element to hold results from spotify API
+  var $results = $('#results');
 
-	var $songTemplate = _.template($('#song-template').html());
+  // loading gif
+  var $loading = $('#loading');
 
-	function SongPost(song, artist, album) {
-		this.song = song;
-		this.artist = artist;
-		this.album = album;
-	};
+  // track (song) template
+  var trackTemplate = _.template($('#track-template').html());
 
-	SongPost.all = [];
+  $loading.hide();
 
-	SongPost.prototype.save = function() {
-		SongPost.all.push(this);
-	};
+  // submit form to search spotify API
+  $spotifySearch.on('submit', function(event) {
+    event.preventDefault();
 
-	SongPost.prototype.render = function() {
-		var $songpost = $($songTemplate(this));
-		this.index = SongPost.all.indexOf(this);
-		$songpost.attr('data-index', this.index);
-		$resultList.append($songpost);
-	};
+    // empty previous results and show loading gif
+    $results.empty();
+    $loading.show();
 
-	_.each(SongPost.all, function(songpost, index){
-		songpost.render();
-	});
+    // save form data to variable
+    var searchTrack = $track.val();
 
-	$spotifySearch.on('submit', function(event){
-		event.preventDefault();
+    // spotify search URL
+    var searchUrl = 'https://api.spotify.com/v1/search?type=track&q=' + searchTrack;
 
-		$('.songpost').remove();
-		SongPost.all = [];
+    // use AJAX to call spotify API
+    $.get(searchUrl, function(data) {
 
-		var $newtrack = $('#newTrack').val();
+      // track results are in an array called `items`
+      // which is nested in the `tracks` object
+      var trackResults = data.tracks.items;
+      console.log(trackResults);
 
-		var spotifyAPI = "https://api.spotify.com/v1/search?type=track&q=" + $newtrack;
-		$.get(spotifyAPI, function(data) {
-			var itemsArray = data;
-			_.each(itemsArray.tracks.items, function(track, i) {
-				var album = track.album.name;
-				var artist = track.artists[0].name;
-				var trackName = track.name;
+      // hide loading gif
+      $loading.hide();
 
-				var songpost = new SongPost(trackName, artist, album);
+      // only append results if there are any
+      if (trackResults.length > 0) {
 
-				songpost.save();
-				songpost.render();
-			});
-		});
+        // iterate through results
+        _.each(trackResults, function(result, index) {
+          
+          // build object of data we want in our template
+          var templateData = {
+            albumArt: result.album.images.length > 0 ? result.album.images[0].url : null,
+            artist: result.artists[0].name,
+            name: result.name,
+            previewUrl: result.preview_url
+          };
 
-		$spotifySearch[0].reset();
-		$('#newTrack').focus();
+          // put data in template and append to view
+          var $trackResult = $(trackTemplate(templateData));
+          $results.append($trackResult);
+        });
 
-	});
+      // else let user know there are no results
+      } else {
+        $results.append('No results.');
+      }
+    });
+
+    // reset the form
+    $spotifySearch[0].reset();
+    $track.focus();
+  });
 
 });
